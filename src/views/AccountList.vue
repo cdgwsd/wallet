@@ -10,10 +10,10 @@
 
       <!-- 平板及桌面端的网格布局 -->
       <div class="md:grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <div v-for="(category, categoryIndex) in accountCategories" :key="category.name"
+        <div v-for="(category, categoryIndex) in $accountCategories" :key="category.name"
           class="bg-white rounded-xl shadow-sm overflow-hidden mb-4 animate-fade-in"
           :style="{ 'animation-delay': `${categoryIndex * 0.1}s` }" :class="{
-            'flex-grow': categoryIndex === accountCategories.length - 1,
+            'flex-grow': categoryIndex === $accountCategories.length - 1,
             'md:mb-0': true
           }">
           <div class="p-3 bg-gray-50 border-b border-gray-100">
@@ -46,99 +46,31 @@
 </template>
 
 <script setup>
-import { ref, inject } from 'vue'
+import { ref, inject, onMounted,getCurrentInstance } from 'vue'
 import WalletHeader from '../components/WalletHeader.vue'
+import { fetchAccountsByCategory } from '../services/api.js'
+
+// 获取全局属性
+const internalInstance = getCurrentInstance()
+const { $accountCategories } = internalInstance.appContext.config.globalProperties
 
 // 获取打开账户模态框的方法
 const openAccountModal = inject('openAccountModal')
 
-// 账户分类数据
-const accountCategories = ref([
-  {
-    name: '现金',
-    accounts: [
-      {
-        id: 1,
-        name: '支付宝',
-        description: '电子支付账户',
-        balance: 100,
-        icon: 'wezhong.svg'
-      },
-      {
-        id: 2,
-        name: '微信',
-        description: '电子支付账户',
-        balance: 200,
-        icon: 'wezhong.svg'
-      },
-      {
-        id: 3,
-        name: '现金',
-        description: '实物货币',
-        balance: 0,
-        icon: 'wezhong.svg'
-      }
-    ]
-  },
-  {
-    name: '信用',
-    accounts: [
-      {
-        id: 4,
-        name: '招商银行信用卡',
-        description: '信用账户',
-        balance: -200,
-        icon: 'wezhong.svg'
-      }
-    ]
-  },
-  {
-    name: '投资',
-    accounts: [
-      {
-        id: 5,
-        name: '投资组合',
-        description: '股票基金',
-        balance: 0,
-        icon: 'wezhong.svg'
-      }
-    ]
-  },
-  {
-    name: '储蓄',
-    accounts: [
-      {
-        id: 6,
-        name: '投资组合',
-        description: '股票基金',
-        balance: 0,
-        icon: 'wezhong.svg'
-      }
-    ]
-  },
-  {
-    name: '债务',
-    accounts: [
-      {
-        id: 7,
-        name: '投资组合',
-        description: '股票基金',
-        balance: 0,
-        icon: 'wezhong.svg'
-      }
-    ]
-  },
-  {
-    name: '其他',
-    accounts: [
-      {
-        id: 8,
-        name: '投资组合',
-        description: '股票基金',
-        balance: 0,
-        icon: 'wezhong.svg'
-      }
-    ]
+// 加载账户数据
+const loadAccounts = async () => {
+  try {
+    const data = await fetchAccountsByCategory()
+    if (data && data.length > 0) {
+      $accountCategories.value = data
+    }
+  } catch (error) {
+    console.error('加载账户数据失败:', error)
   }
-])
+}
+
+// 组件挂载时加载数据
+onMounted(() => {
+  loadAccounts()
+})
 </script>

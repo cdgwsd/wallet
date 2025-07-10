@@ -28,12 +28,39 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import { fetchData } from '../services/api.js'
 
 const router = useRouter()
-const netWorth = ref(100)
+const netWorth = ref(0)
 const isRefreshing = ref(false)
+const accounts = ref([])
+
+// 计算净资产
+const calculateNetWorth = () => {
+  if (!accounts.value || accounts.value.length === 0) {
+    netWorth.value = 0
+    return
+  }
+  
+  // 计算所有账户余额的总和
+  const total = accounts.value.reduce((sum, account) => sum + (parseFloat(account.balance) || 0), 0)
+  netWorth.value = total.toFixed(2)
+}
+
+// 加载账户数据
+const loadAccounts = async () => {
+  try {
+    isRefreshing.value = true
+    accounts.value = await fetchData('accounts')
+    calculateNetWorth()
+  } catch (error) {
+    console.error('加载账户数据失败:', error)
+  } finally {
+    isRefreshing.value = false
+  }
+}
 
 // 刷新数据
 const goToStatistics = () => {
@@ -44,4 +71,14 @@ const goToStatistics = () => {
 const goToAddAccount = () => {
   router.push('/add-account')
 }
+
+// 监听账户数据变化
+watch(accounts, () => {
+  calculateNetWorth()
+}, { deep: true })
+
+// 组件挂载时加载数据
+onMounted(() => {
+  loadAccounts()
+})
 </script>

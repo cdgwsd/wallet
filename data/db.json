@@ -23,60 +23,6 @@
       "description": "实物货币",
       "balance": 0,
       "icon": "wezhong.svg"
-    },
-    {
-      "id": 1752155185300,
-      "type": "savings",
-      "name": "123",
-      "description": "储蓄账户",
-      "balance": 12,
-      "icon": "wallet.svg",
-      "createdAt": "2025-07-10T13:46:25.300Z"
-    },
-    {
-      "id": 1752155222713,
-      "type": "cash",
-      "name": "123",
-      "description": "现金账户",
-      "balance": 123,
-      "icon": "wallet.svg",
-      "createdAt": "2025-07-10T13:47:02.713Z"
-    },
-    {
-      "id": 1752157076823,
-      "type": "cash",
-      "name": "55是的发个",
-      "description": "现金账户",
-      "balance": 123123,
-      "icon": "wallet.svg",
-      "createdAt": "2025-07-10T14:17:56.823Z"
-    },
-    {
-      "id": 1752157137403,
-      "type": "credit",
-      "name": "123123噶",
-      "description": "信用账户",
-      "balance": 1,
-      "icon": "wallet.svg",
-      "createdAt": "2025-07-10T14:18:57.403Z"
-    },
-    {
-      "id": 1752157385741,
-      "type": "debt",
-      "name": "发",
-      "description": "负债",
-      "balance": 1123,
-      "icon": "wallet.svg",
-      "createdAt": "2025-07-10T14:23:05.741Z"
-    },
-    {
-      "id": 1752158212575,
-      "type": "investment",
-      "name": "哈哈",
-      "description": "投资账户",
-      "balance": 100,
-      "icon": "wallet.svg",
-      "createdAt": "2025-07-10T14:36:52.575Z"
     }
   ],
   "transactions": []

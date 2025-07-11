@@ -46,6 +46,28 @@ export async function saveData(type, data) {
 }
 
 /**
+ * 删除账户数据
+ * @param {string} accountId - 要删除的账户id
+ * @returns {Promise<Object>} - 返回保存结果
+ */
+export async function deleteData(accountId) {
+    try {
+        const response = await fetch(`http://${window.location.hostname}:3000/api/delete-data/${accountId}`, {
+            method: "DELETE",
+        });
+
+        if (!response.ok) {
+            throw new Error(`删除${accountId}数据失败: ${response.statusText}`);
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error(`删除${accountId}数据出错:`, error);
+        throw error;
+    }
+}
+
+/**
  * 根据账户类型对账户列表进行分组
  * @param {Object} accounts - 账户列表
  * @returns {Object} 分组后的账户数组

@@ -61,6 +61,23 @@ app.post('/api/save-data', async (req, res) => {
   }
 });
 
+// API路由 - 删除数据
+app.delete('/api/delete-data/:accountId', async (req, res) => {
+  try {
+    const { accountId } = req.params;
+    await db.read();
+    // 使用lowdb v7的update方法直接修改数据
+    db.update(data => {
+      data.accounts = data.accounts.filter(account => account.id != accountId);
+    });
+    await db.write();
+    const data = db.data.accounts || [];
+    res.status(200).json(data);
+  } catch (error) {
+    res.status(500).json({ error: '数据删除失败', details: error.message });
+  }
+});
+
 // API路由 - 获取数据
 app.get('/api/get-data/:type', async (req, res) => {
   try {

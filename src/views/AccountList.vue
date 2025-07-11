@@ -1,10 +1,15 @@
 <template>
     <div class="flex flex-col h-screen">
         <!-- 钱包头部 -->
-        <WalletHeader />
+        <WalletHeader ref="walletHeader" />
 
         <!-- 账户列表 -->
-        <div class="p-4 md:p-6 flex-1 overflow-y-auto md:ml-16 lg:ml-20" @click="closeAllSwipeItems">
+        <PullToRefresh 
+            class="flex-1 overflow-y-auto md:ml-16 lg:ml-20" 
+            :refreshing="isRefreshing" 
+            @refresh="handleRefresh"
+            :disabled="isRefreshDisabled">
+        <div class="p-4 md:p-6" @click="closeAllSwipeItems">
             <!-- 平板及桌面端的标题 -->
             <h2 class="hidden md:block text-2xl font-bold text-gray-800 mb-6">我的账户</h2>
 
@@ -39,7 +44,7 @@
                                 :style="{ transform: `translateX(${swipeOffset[`${categoryIndex}-${accountIndex}`] || 0}px)` }"
                                 :class="{ 'transition-transform': isTransitioning[`${categoryIndex}-${accountIndex}`] }"
                             >
-                                <div class="flex justify-between items-center p-3 md:p-4 hover:bg-gray-50 transition-colors">
+                                <div class="flex justify-between items-center p-3 md:p-4 transition-colors">
                                     <div class="flex items-center">
                                         <div class="w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center">
                                             <img :src="$iconPath(account.icon)" class="w-7 h-7" />
@@ -70,13 +75,15 @@
                 </div>
             </div>
         </div>
+        </PullToRefresh>
     </div>
 </template>
 
 <script setup>
-import { ref, inject, onMounted, getCurrentInstance, reactive } from "vue";
+import { ref, inject, onMounted, onUnmounted, getCurrentInstance, reactive, computed } from "vue";
 import { useRouter } from "vue-router";
 import WalletHeader from "../components/WalletHeader.vue";
+import PullToRefresh from "../components/PullToRefresh.vue";
 import { deleteData, fetchAccountsByCategory } from "../services/api.js";
 
 // 获取路由实例
@@ -129,6 +136,66 @@ const removeAccountById = (targetId) => {
                 // 保留有accounts字段且accounts数组不为空的项
                 !item.accounts || item.accounts.length > 0
         );
+};
+
+// 刷新状态
+const isRefreshing = ref(false);
+
+// 检查是否为 PWA 模式
+const isPWAMode = ref(false);
+onMounted(() => {
+    // 检查是否为 PWA 模式（iOS 和 Android 兼容）
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
+                         window.navigator.standalone || 
+                         document.referrer.includes('android-app://') ||
+                         window.location.search.includes('source=pwa');
+    
+    // 如果是 PWA 模式，添加特定的 body 类
+    if (isStandalone) {
+        document.body.classList.add('pwa-mode');
+        
+        // 监听 PWA 恢复事件，当用户从后台切回应用时自动刷新数据
+        window.addEventListener('pwa-resume', handleRefresh);
+    } else {
+        document.body.classList.remove('pwa-mode');
+    }
+    
+    isPWAMode.value = isStandalone;
+    
+    // 初始加载数据
+    loadAccounts();
+});
+
+onUnmounted(() => {
+    // 移除 PWA 恢复事件监听器
+    window.removeEventListener('pwa-resume', handleRefresh);
+});
+
+// 是否禁用下拉刷新（在非 PWA 模式下不需要禁用）
+const isRefreshDisabled = computed(() => {
+    return false; // 始终启用下拉刷新，无论是否为 PWA 模式
+});
+
+// 钱包头部组件引用
+const walletHeader = ref(null);
+
+// 处理下拉刷新
+const handleRefresh = async () => {
+    if (isRefreshing.value) return;
+    isRefreshing.value = true;
+    
+    // 并行刷新账户列表和钱包头部
+    const promises = [
+        loadAccounts(),
+        walletHeader.value?.loadAccounts()
+    ];
+    
+    await Promise.all(promises);
+    
+    // 延迟一下，让用户看到刷新动画
+    setTimeout(() => {
+        isRefreshing.value = false;
+    }, 800);
 };
 
 // 加载账户数据
@@ -242,10 +309,7 @@ const closeAllSwipeItems = () => {
     }
 };
 
-// 组件挂载时加载数据
-onMounted(() => {
-    loadAccounts();
-});
+// 这个钩子已经被合并到上面的 onMounted 钩子中
 </script>
 
 <style scoped>

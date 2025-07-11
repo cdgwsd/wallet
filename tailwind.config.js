@@ -37,5 +37,38 @@ export default {
       },
     },
   },
-  plugins: [],
+  plugins: [
+    function({ addUtilities }) {
+      const newUtilities = {
+        '.safe-area-inset': {
+          paddingTop: 'env(safe-area-inset-top)',
+          paddingLeft: 'env(safe-area-inset-left)',
+          paddingRight: 'env(safe-area-inset-right)'
+        },
+        '.pt-safe': {
+          paddingTop: 'env(safe-area-inset-top)'
+        },
+        '.pb-safe': {
+          paddingBottom: 'env(safe-area-inset-bottom)'
+        },
+        '.pl-safe': {
+          paddingLeft: 'env(safe-area-inset-left)'
+        },
+        '.pr-safe': {
+          paddingRight: 'env(safe-area-inset-right)'
+        },
+        '.h-screen-safe': {
+          height: 'calc(100vh - env(safe-area-inset-bottom))'
+        }
+      }
+      // 移除底部安全区域相关的样式
+      const filteredUtilities = {};
+      for (const key in newUtilities) {
+        if (key !== '.pb-safe' && key !== '.h-screen-safe') {
+          filteredUtilities[key] = newUtilities[key];
+        }
+      }
+      addUtilities(filteredUtilities)
+    },
+  ],
 }

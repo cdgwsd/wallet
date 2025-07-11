@@ -2,13 +2,76 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-touch-fullscreen" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="钱包">
+  <meta name="apple-mobile-web-app-orientations" content="portrait">
+  <meta name="theme-color" content="#ffffff">
   <title>钱包应用</title>
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="apple-touch-icon" href="/icons/icon-192x192.svg">
+  <!-- iOS启动屏幕 -->
+  <link rel="apple-touch-startup-image" href="/splash.svg" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)">
+  <link rel="apple-touch-startup-image" href="/splash.svg" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)">
+  <link rel="apple-touch-startup-image" href="/splash.svg" media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3)">
+  <link rel="apple-touch-startup-image" href="/splash.svg" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3)">
+  <link rel="apple-touch-startup-image" href="/splash.svg" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2)">
+  <link rel="apple-touch-startup-image" href="/splash.svg" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3)">
+  <link rel="apple-touch-startup-image" href="/splash.svg" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3)">
+  <link rel="apple-touch-startup-image" href="/splash.svg" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3)">
+  <link rel="apple-touch-startup-image" href="/splash.svg" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3)">
   <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
 </head>
 <body class="bg-gray-100 min-h-screen font-sans">
+  <!-- iOS用户添加到主屏幕提示 -->
+  <div id="ios-pwa-banner" style="display: none; position: fixed; top: 0; left: 0; right: 0; background-color: rgba(22, 93, 255, 0.9); color: white; padding: 10px; text-align: center; z-index: 9999; font-size: 14px;">
+    将此应用添加到主屏幕以获得更好的体验 
+    <a href="/add-to-homescreen.html" style="color: white; text-decoration: underline; margin-left: 5px;">查看如何操作</a>
+    <button onclick="document.getElementById('ios-pwa-banner').style.display='none'; localStorage.setItem('pwa-banner-closed', 'true');" style="background: none; border: none; color: white; margin-left: 10px; font-size: 16px;">&times;</button>
+  </div>
+  
   <div id="app"></div>
   <script type="module" src="/src/main.js"></script>
+  <script>
+    // 注册Service Worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then(registration => {
+            console.log('Service Worker 注册成功:', registration.scope);
+          })
+          .catch(error => {
+            console.log('Service Worker 注册失败:', error);
+          });
+      });
+    }
+    
+    // 检测iOS设备并显示添加到主屏幕的提示
+    window.addEventListener('load', () => {
+      // 检测是否为iOS设备
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+      
+      // 检测是否已经以PWA模式运行
+      const isInStandaloneMode = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+      
+      // 检测用户是否已经关闭过提示
+      const hasBannerBeenClosed = localStorage.getItem('pwa-banner-closed') === 'true';
+      
+      // 如果是iOS设备，不是PWA模式，且用户没有关闭过提示，则显示横幅
+      if (isIOS && !isInStandaloneMode && !hasBannerBeenClosed) {
+        // 延迟2秒显示，给用户一些时间先看到应用内容
+        setTimeout(() => {
+          document.getElementById('ios-pwa-banner').style.display = 'block';
+          // 添加安全区域顶部内边距
+          document.getElementById('ios-pwa-banner').style.paddingTop = 'max(10px, env(safe-area-inset-top))';
+        }, 2000);
+      }
+    });
+  </script>
 </body>
 </html>
     

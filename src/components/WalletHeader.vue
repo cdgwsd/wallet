@@ -1,5 +1,5 @@
 <template>
-  <div class="relative glass-effect p-4 sm:p-6 border-b border-gray-200">
+  <div class="relative glass-effect p-4 sm:p-6 border-b border-gray-200 safe-top">
     <div class="flex justify-between items-center mb-4">
       <!-- 在平板及以上设备显示设置按钮 -->
       <button class="hidden md:block text-gray-600 hover:text-primary transition-colors">
@@ -28,7 +28,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, defineExpose } from 'vue'
 import { useRouter } from 'vue-router'
 import { fetchData } from '../services/api.js'
 
@@ -81,4 +81,40 @@ watch(accounts, () => {
 onMounted(() => {
   loadAccounts()
 })
+
+// 暴露方法给父组件
+defineExpose({
+  loadAccounts
+})
 </script>
+
+<style scoped>
+/* 适配iPhone顶部安全区域 */
+.safe-top {
+  padding-top: max(1rem, env(safe-area-inset-top, 1rem));
+}
+
+/* 玻璃效果 */
+.glass-effect {
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  background-color: rgba(255, 255, 255, 0.8);
+}
+
+/* 微妙的脉冲动画 */
+@keyframes pulse-subtle {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.95;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.animate-pulse-subtle {
+  animation: pulse-subtle 2s infinite ease-in-out;
+}
+</style>

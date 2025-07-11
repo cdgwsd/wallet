@@ -122,7 +122,7 @@
             <div 
               v-for="(month, index) in monthlyDetails" 
               :key="index"
-              class="flex justify-between items-center py-3 md:py-4 hover:bg-gray-50 transition-colors"
+              class="flex justify-between items-center py-3 md:py-4 transition-colors"
             >
               <div>
                 <h4 class="text-sm md:text-base font-medium text-gray-800">{{ month.label }}</h4>

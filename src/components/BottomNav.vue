@@ -1,6 +1,6 @@
 <template>
   <!-- 移动端底部导航 -->
-  <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 mx-auto shadow-top z-30"
+  <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 mx-auto z-30"
        :class="{'max-w-full sm:max-w-lg': true}">
     <div class="flex justify-around items-center py-2 sm:py-3">
       <button 
@@ -89,3 +89,7 @@ const navigateTo = (path) => {
   router.push(path)
 }
 </script>
+
+<style scoped>
+/* 底部导航栏样式已移除 */
+</style>

@@ -7,9 +7,9 @@
       </button>
       <h1 class="text-xl md:text-2xl font-bold text-gray-800">钱包</h1>
       <div class="flex space-x-3">
-        <button class="text-gray-600 hover:text-primary transition-colors" @click="goToStatistics">
+        <!-- <button class="text-gray-600 hover:text-primary transition-colors" @click="goToStatistics">
           <img src="@/assets/icons/pie-chart.svg" class="text-lg sm:text-xl w-6 h-6" />
-        </button>
+        </button> -->
         <button class="text-gray-600 hover:text-primary transition-colors" @click="goToAddAccount">
           <img src="@/assets/icons/plus.svg" class="text-lg sm:text-xl w-6 h-6" />
         </button>

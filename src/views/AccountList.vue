@@ -75,8 +75,12 @@
 
 <script setup>
 import { ref, inject, onMounted, getCurrentInstance, reactive } from "vue";
+import { useRouter } from "vue-router";
 import WalletHeader from "../components/WalletHeader.vue";
 import { deleteData, fetchAccountsByCategory } from "../services/api.js";
+
+// 获取路由实例
+const router = useRouter();
 
 // 获取全局属性
 const internalInstance = getCurrentInstance();
@@ -88,7 +92,8 @@ const openAccountModal = inject("openAccountModal");
 // 编辑账户
 const editAccount = (account) => {
     console.log("编辑账户:", account);
-    // 这里可以实现编辑账户的逻辑，例如打开编辑模态框
+    // 导航到编辑账户页面，并传递账户ID
+    router.push(`/edit-account/${account.id}`);
     closeAllSwipeItems();
 };
 

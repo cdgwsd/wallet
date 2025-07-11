@@ -90,6 +90,35 @@ app.get('/api/get-data/:type', async (req, res) => {
   }
 });
 
+// API路由 - 更新数据
+app.put('/api/update-data', async (req, res) => {
+  try {
+    const { type, data } = req.body;
+    if (!type || !data || !data.id) {
+      return res.status(400).json({ error: '缺少必要参数: type、data或data.id' });
+    }
+
+    await db.read();
+    if (!db.data[type]) {
+      return res.status(404).json({ error: `找不到${type}类型的数据` });
+    }
+
+    // 查找并更新数据
+    const index = db.data[type].findIndex(item => item.id == data.id);
+    if (index === -1) {
+      return res.status(404).json({ error: `找不到id为${data.id}的${type}数据` });
+    }
+
+    // 更新数据
+    db.data[type][index] = data;
+    await db.write();
+
+    res.status(200).json({ success: true, message: '数据更新成功' });
+  } catch (error) {
+    res.status(500).json({ error: '数据更新失败', details: error.message });
+  }
+});
+
 // 启动服务器 - 修改监听地址为0.0.0.0
 app.listen(PORT, '0.0.0.0', async () => {
   await initDB();

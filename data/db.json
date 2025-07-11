@@ -1,20 +1,13 @@
 {
   "accounts": [
     {
-      "id": 1,
-      "name": "支付宝",
-      "type": "cash",
-      "description": "电子支付账户",
-      "balance": 100,
-      "icon": "wezhong.svg"
-    },
-    {
       "id": 2,
-      "name": "微信",
       "type": "credit",
+      "name": "微信",
       "description": "电子支付账户",
-      "balance": 200,
-      "icon": "wezhong.svg"
+      "balance": 300,
+      "icon": "wezhong.svg",
+      "updatedAt": "2025-07-11T05:48:30.373Z"
     },
     {
       "id": 3,
@@ -23,6 +16,42 @@
       "description": "实物货币",
       "balance": 0,
       "icon": "wezhong.svg"
+    },
+    {
+      "id": 1752212925770,
+      "type": "cash",
+      "name": "支付宝",
+      "description": "现金账户",
+      "balance": 100,
+      "icon": "wallet.svg",
+      "createdAt": "2025-07-11T05:48:45.770Z"
+    },
+    {
+      "id": 1752212938430,
+      "type": "cash",
+      "name": "钱包",
+      "description": "现金账户",
+      "balance": 20,
+      "icon": "wallet.svg",
+      "createdAt": "2025-07-11T05:48:58.430Z"
+    },
+    {
+      "id": 1752213221782,
+      "type": "receivable",
+      "name": "re",
+      "description": "债权",
+      "balance": 1,
+      "icon": "wallet.svg",
+      "createdAt": "2025-07-11T05:53:41.782Z"
+    },
+    {
+      "id": 1752213228794,
+      "type": "receivable",
+      "name": "rt",
+      "description": "债权",
+      "balance": 12,
+      "icon": "wallet.svg",
+      "createdAt": "2025-07-11T05:53:48.794Z"
     }
   ],
   "transactions": []

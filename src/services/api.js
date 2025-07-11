@@ -46,6 +46,37 @@ export async function saveData(type, data) {
 }
 
 /**
+ * 更新数据到服务器
+ * @param {string} type - 数据类型，如'accounts'或'transactions'
+ * @param {Object} data - 要更新的数据对象，必须包含id字段
+ * @returns {Promise<Object>} - 返回更新结果
+ */
+export async function updateData(type, data) {
+    if (!data.id) {
+        throw new Error('更新数据必须包含id字段');
+    }
+    
+    try {
+        const response = await fetch(`http://${window.location.hostname}:3000/api/update-data`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ type, data }),
+        });
+
+        if (!response.ok) {
+            throw new Error(`更新${type}数据失败: ${response.statusText}`);
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error(`更新${type}数据出错:`, error);
+        throw error;
+    }
+}
+
+/**
  * 删除账户数据
  * @param {string} accountId - 要删除的账户id
  * @returns {Promise<Object>} - 返回保存结果
@@ -109,21 +140,47 @@ export async function fetchAccountsByCategory() {
     try {
         const accounts = await fetchData("accounts");
 
-        const groupedAccounts = [];
+        // 定义账户类型映射
+        const categoryMap = {
+            cash: "现金",
+            credit: "信用",
+            investment: "投资",
+            savings: "储蓄",
+            debt: "债务",
+            receivable: "债权",
+            other: "其他",
+        };
+        
+        // 创建分组对象
+        const groupsMap = {};
+        
+        // 遍历所有账户，按类型分组
         for (var i = 0; i < accounts.length; i++) {
             var account = accounts[i];
-            var group = groupAccountsByType(account);
-            if (group) {
-                groupedAccounts.push(group);
+            var type = account.type;
+            
+            // 如果该类型不存在，创建新分组
+            if (!groupsMap[type] && categoryMap[type]) {
+                groupsMap[type] = {
+                    name: categoryMap[type],
+                    accounts: []
+                };
+            }
+            
+            // 将账户添加到对应分组
+            if (groupsMap[type]) {
+                groupsMap[type].accounts.push(account);
             }
         }
+        
+        // 转换为数组
+        const groupedAccounts = Object.values(groupsMap);
+        
+        // 过滤掉空分组
+        const filteredGroups = groupedAccounts.filter(group => group.accounts.length > 0);
 
-        // const groupedAccounts = Object.keys(categoryMap).map((type) => ({
-        //     name: categoryMap[type],
-        //     accounts: accounts.filter((account) => account.type === type),
-        // }));
-
-        return groupedAccounts;
+        // 返回过滤后的分组结果
+        return filteredGroups;
     } catch (error) {
         console.error("获取分类账户数据出错:", error);
         return [];

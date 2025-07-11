@@ -38,9 +38,9 @@ import AccountModal from './components/AccountModal.vue'
 
 const route = useRoute()
 
-// 判断当前是否为添加账户路由
+// 判断当前是否为添加账户路由或编辑账户路由
 const isAddAccountRoute = computed(() => {
-  return route.path === '/add-account'
+  return route.path === '/add-account' || route.path.startsWith('/edit-account/')
 })
 
 // 账户模态框状态

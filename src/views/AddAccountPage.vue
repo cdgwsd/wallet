@@ -4,7 +4,7 @@
             <button id="back-btn-2" class="text-gray-600 hover:text-primary transition-colors" @click="goBack">
                 <img src="@/assets/icons/arrow-left.svg" class="w-6 h-6" />
             </button>
-            <h2 class="font-semibold text-gray-800 text-lg md:text-xl">添加新的账户</h2>
+            <h2 class="font-semibold text-gray-800 text-lg md:text-xl">{{ isEditMode ? '编辑账户' : '添加新的账户' }}</h2>
             <button class="text-gray-600 hover:text-primary transition-colors">
                 <i class="fa fa-question-circle"></i>
             </button>
@@ -76,9 +76,9 @@
         <button
             class="w-full py-3 md:py-4 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition-colors animate-fade-in text-sm md:text-base"
             style="animation-delay: 0.2s"
-            @click="addAccount"
+            @click="isEditMode ? updateAccount() : addAccount()"
         >
-            添加账户
+            {{ isEditMode ? '保存修改' : '添加账户' }}
         </button>
 
         <!-- 图标选择模态框 -->
@@ -102,14 +102,22 @@
 </template>
 
 <script setup>
-import { ref, onMounted, getCurrentInstance,triggerRef  } from "vue";
+import { ref, onMounted, getCurrentInstance, triggerRef, computed } from "vue";
 import { useRouter, useRoute } from "vue-router";
-import { saveData,groupAccountsByType } from "../services/api.js";
+import { saveData, fetchData, groupAccountsByType, updateData } from "../services/api.js";
 
 const router = useRouter();
 const route = useRoute();
 const internalInstance = getCurrentInstance();
 const { $accountCategories } = internalInstance.appContext.config.globalProperties;
+
+// 判断是否为编辑模式
+const isEditMode = computed(() => {
+    return route.params.id !== undefined;
+});
+
+// 当前编辑的账户ID
+const currentAccountId = ref(null);
 
 // 账户类型选项
 const accountTypes = [
@@ -143,9 +151,41 @@ const selectIcon = (icon) => {
     showIconSelector.value = false;
 };
 
-// 从路由参数中获取账户类型
+// 加载账户数据
+const loadAccountData = async (id) => {
+    try {
+        // 获取所有账户数据
+        const accounts = await fetchData("accounts");
+        // 查找指定ID的账户
+        const account = accounts.find(acc => acc.id == id);
+        
+        if (account) {
+            // 设置当前账户ID
+            currentAccountId.value = account.id;
+            // 填充表单数据
+            accountType.value = account.type;
+            accountName.value = account.name;
+            initialBalance.value = account.balance.toString();
+            notes.value = account.description || "";
+            selectedIcon.value = account.icon;
+        } else {
+            alert("未找到指定账户");
+            goBack();
+        }
+    } catch (error) {
+        console.error("加载账户数据失败:", error);
+        alert("加载账户数据失败");
+        goBack();
+    }
+};
+
+// 从路由参数中获取账户类型或加载编辑账户数据
 onMounted(() => {
-    if (route.query.type) {
+    if (isEditMode.value) {
+        // 编辑模式，加载账户数据
+        loadAccountData(route.params.id);
+    } else if (route.query.type) {
+        // 新增模式，设置账户类型
         accountType.value = route.query.type;
     }
 });
@@ -156,17 +196,24 @@ const goBack = () => {
     history.back();
 };
 
-// 添加账户
-const addAccount = async () => {
-    // 表单验证逻辑
+// 表单验证
+const validateForm = () => {
     if (!accountName.value.trim()) {
         alert("请输入账户名称");
-        return;
+        return false;
     }
 
     if (!initialBalance.value.trim()) {
         initialBalance.value = "0";
     }
+    
+    return true;
+};
+
+// 添加账户
+const addAccount = async () => {
+    // 表单验证
+    if (!validateForm()) return;
 
     // 创建账户对象
     const newAccount = {
@@ -183,14 +230,113 @@ const addAccount = async () => {
         // 保存到服务器
         await saveData("accounts", newAccount);
 
-        $accountCategories.value.push(groupAccountsByType(newAccount));
-
+        // 定义账户类型映射
+        const categoryMap = {
+            cash: "现金",
+            credit: "信用",
+            investment: "投资",
+            savings: "储蓄",
+            debt: "债务",
+            receivable: "债权",
+            other: "其他",
+        };
+        
+        // 查找是否已存在该类型的分类
+        const existingCategoryIndex = $accountCategories.value.findIndex(category => 
+            category.name === categoryMap[newAccount.type]
+        );
+        
+        if (existingCategoryIndex !== -1) {
+            // 如果已存在该类型的分类，将新账户添加到该分类中
+            $accountCategories.value[existingCategoryIndex].accounts.push(newAccount);
+        } else {
+            // 如果不存在该类型的分类，创建新分类
+            if (categoryMap[newAccount.type]) {
+                $accountCategories.value.push({
+                    name: categoryMap[newAccount.type],
+                    accounts: [newAccount]
+                });
+            }
+        }
 
         // 添加成功后返回账户列表页面
         history.back();
     } catch (error) {
         console.error("保存账户失败:", error);
         alert("保存账户失败，请重试");
+    }
+};
+
+// 更新账户
+const updateAccount = async () => {
+    // 表单验证
+    if (!validateForm()) return;
+    
+    // 创建更新后的账户对象
+    const updatedAccount = {
+        id: currentAccountId.value,
+        type: accountType.value,
+        name: accountName.value,
+        description: notes.value || accountTypes.find((t) => t.value === accountType.value)?.label || "",
+        balance: parseFloat(initialBalance.value) || 0,
+        icon: selectedIcon.value || "wallet.svg",
+        updatedAt: new Date().toISOString(),
+    };
+
+    try {
+        // 保存到服务器
+        await updateData("accounts", updatedAccount);
+        
+        // 更新本地数据
+        // 遍历所有分类，找到并更新对应的账户
+        $accountCategories.value = $accountCategories.value.map(category => {
+            // 检查该分类中是否有要更新的账户
+            const accountIndex = category.accounts.findIndex(acc => acc.id == currentAccountId.value);
+            
+            if (accountIndex !== -1) {
+                // 如果账户类型没变，直接更新该账户
+                if (category.accounts[accountIndex].type === updatedAccount.type) {
+                    category.accounts[accountIndex] = updatedAccount;
+                } else {
+                    // 如果账户类型变了，从当前分类中移除
+                    category.accounts.splice(accountIndex, 1);
+                }
+            }
+            
+            return category;
+        }).filter(category => category.accounts.length > 0); // 移除空分类
+        
+        // 如果账户类型变了，可能需要添加到新分类
+        const existingCategory = $accountCategories.value.find(cat => {
+            return cat.accounts.some(acc => acc.id == currentAccountId.value);
+        });
+        
+        if (!existingCategory) {
+            // 账户不在任何分类中，说明类型已变更，添加到新分类
+            const categoryMap = {
+                cash: "现金",
+                credit: "信用",
+                investment: "投资",
+                savings: "储蓄",
+                debt: "债务",
+                receivable: "债权",
+                other: "其他",
+            };
+            
+            // 创建新的分类并添加账户
+            if (categoryMap[updatedAccount.type]) {
+                $accountCategories.value.push({
+                    name: categoryMap[updatedAccount.type],
+                    accounts: [updatedAccount]
+                });
+            }
+        }
+
+        // 更新成功后返回账户列表页面
+        history.back();
+    } catch (error) {
+        console.error("更新账户失败:", error);
+        alert("更新账户失败，请重试");
     }
 };
 </script>

@@ -25,6 +25,18 @@ const router = createRouter({
         background: AccountList,
         modal: AddAccountPage
       }
+    },
+    {
+      path: '/edit-account/:id',
+      name: 'edit-account',
+      components: {
+        default: EmptyComponent,
+        background: AccountList,
+        modal: AddAccountPage
+      },
+      props: {
+        modal: true
+      }
     }
   ]
 })

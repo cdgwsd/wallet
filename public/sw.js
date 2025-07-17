@@ -44,7 +44,7 @@ self.addEventListener('fetch', event => {
   const requestUrl = new URL(event.request.url);
   
   // 检查是否是API请求
-  if (requestUrl.pathname.includes('/api/')) {
+  if (requestUrl.pathname.startsWith('/api/')) {
     // 对于API请求，优先使用网络，网络失败时才使用缓存（网络优先策略）
     event.respondWith(
       fetch(event.request)

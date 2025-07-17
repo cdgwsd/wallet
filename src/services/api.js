@@ -7,7 +7,8 @@
  */
 export async function fetchData(type) {
     try {
-        const response = await fetch(`http://${window.location.hostname}:3000/api/get-data/${type}`);
+        // const response = await fetch(`http://${window.location.hostname}:3000/api/get-data/${type}`);
+        const response = await fetch(`/api/get-data/${type}`);
         if (!response.ok) {
             throw new Error(`获取${type}数据失败: ${response.statusText}`);
         }
@@ -26,7 +27,7 @@ export async function fetchData(type) {
  */
 export async function saveData(type, data) {
     try {
-        const response = await fetch(`http://${window.location.hostname}:3000/api/save-data`, {
+        const response = await fetch(`/api/save-data`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -57,7 +58,7 @@ export async function updateData(type, data) {
     }
     
     try {
-        const response = await fetch(`http://${window.location.hostname}:3000/api/update-data`, {
+        const response = await fetch(`/api/update-data`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
@@ -83,7 +84,7 @@ export async function updateData(type, data) {
  */
 export async function deleteData(accountId) {
     try {
-        const response = await fetch(`http://${window.location.hostname}:3000/api/delete-data/${accountId}`, {
+        const response = await fetch(`/api/delete-data/${accountId}`,  {
             method: "DELETE",
         });
 

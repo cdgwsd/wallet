@@ -49,7 +49,14 @@ export default defineConfig({
     })
   ],
   server: {
-    host: '0.0.0.0' // 允许局域网访问
+    host: '0.0.0.0',
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3000', // 后端服务器地址
+        changeOrigin: true, // 允许跨域
+        rewrite: (path) => path
+      }
+    }
   },
   resolve: {
     alias: {

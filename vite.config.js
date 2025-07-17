@@ -49,6 +49,8 @@ export default defineConfig({
     })
   ],
   server: {
+    // 允许所有网站访问
+    allowedHosts: true,
     host: '0.0.0.0',
     proxy: {
       '/api': {

@@ -1,0 +1,8 @@
+services:
+    app:
+        build: .
+        ports:
+            - "32517:5173"
+        volumes:
+            - /vol1/1000/docker/wallet/data:/app/data
+            - /vol1/1000/docker/wallet/icons:/app/data/assets/icons
